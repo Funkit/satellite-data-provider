@@ -7,12 +7,8 @@ def GetRange(satellite_name, tle_line_1, tle_line_2, station_latitude, station_l
     city = ephem.Observer()
     city.lon, city.lat, city.elevation, city.date = station_latitude , station_longitude , station_altitude, computation_date
     satellite.compute(city)
-    
-    #print("range for date " + computation_date)
-
     return satellite.az, satellite.alt, satellite.range
 
-# Date should have format %Y/%m/%d %H:%M:%S
 def GetPointingRangeList(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, date_start, date_stop):
     date_pattern = '%Y/%m/%d %H:%M:%S'
 

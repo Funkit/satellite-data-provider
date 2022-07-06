@@ -1,0 +1,10 @@
+{
+    "protoc": {
+        "path": "C:/Protobuf/bin/protoc",
+        "options": [
+            "--proto_path=${workspaceRoot}/proto",
+            "--python_out=./processing",
+            "--grpc_python_out=./processing"
+        ]
+    }
+}

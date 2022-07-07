@@ -24,7 +24,7 @@ option java_outer_classname = "AntennaPointingProto";
 package pointing;
 
 // The greeting service definition.
-service Greeter {
+service Processing {
   // Sends a greeting
   rpc GetAntennaPointing (AntennaPointingRequest) returns (AntennaPointingReply) {}
 }

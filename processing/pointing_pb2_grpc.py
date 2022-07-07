@@ -5,7 +5,7 @@ import grpc
 import pointing_pb2 as pointing__pb2
 
 
-class GreeterStub(object):
+class ProcessingStub(object):
     """The greeting service definition.
     """
 
@@ -16,13 +16,13 @@ class GreeterStub(object):
             channel: A grpc.Channel.
         """
         self.GetAntennaPointing = channel.unary_unary(
-                '/pointing.Greeter/GetAntennaPointing',
+                '/pointing.Processing/GetAntennaPointing',
                 request_serializer=pointing__pb2.AntennaPointingRequest.SerializeToString,
                 response_deserializer=pointing__pb2.AntennaPointingReply.FromString,
                 )
 
 
-class GreeterServicer(object):
+class ProcessingServicer(object):
     """The greeting service definition.
     """
 
@@ -34,7 +34,7 @@ class GreeterServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_GreeterServicer_to_server(servicer, server):
+def add_ProcessingServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetAntennaPointing': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAntennaPointing,
@@ -43,12 +43,12 @@ def add_GreeterServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'pointing.Greeter', rpc_method_handlers)
+            'pointing.Processing', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Greeter(object):
+class Processing(object):
     """The greeting service definition.
     """
 
@@ -63,7 +63,7 @@ class Greeter(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/pointing.Greeter/GetAntennaPointing',
+        return grpc.experimental.unary_unary(request, target, '/pointing.Processing/GetAntennaPointing',
             pointing__pb2.AntennaPointingRequest.SerializeToString,
             pointing__pb2.AntennaPointingReply.FromString,
             options, channel_credentials,

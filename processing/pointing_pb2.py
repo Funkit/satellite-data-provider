@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 import datetime_pb2 as datetime__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0epointing.proto\x12\x08pointing\x1a\x0e\x64\x61tetime.proto\"\x9f\x01\n\x16\x41ntennaPointingRequest\x12=\n\x15satellite_information\x18\x01 \x01(\x0b\x32\x1e.pointing.SatelliteInformation\x12\x46\n\x1aground_station_information\x18\x02 \x01(\x0b\x32\".pointing.GroundStationInformation\"V\n\x14SatelliteInformation\x12\x16\n\x0esatellite_name\x18\x01 \x01(\t\x12\x12\n\ntle_line_1\x18\x02 \x01(\t\x12\x12\n\ntle_line_2\x18\x03 \x01(\t\"\xbe\x01\n\x18GroundStationInformation\x12\x18\n\x10station_latitude\x18\x01 \x01(\x01\x12\x19\n\x11station_longitude\x18\x02 \x01(\x01\x12\x18\n\x10station_altitude\x18\x03 \x01(\x01\x12)\n\nstart_date\x18\x04 \x01(\x0b\x32\x15.google.type.DateTime\x12(\n\tstop_date\x18\x05 \x01(\x0b\x32\x15.google.type.DateTime\"\'\n\x14\x41ntennaPointingReply\x12\x0f\n\x07message\x18\x01 \x01(\t2c\n\x07Greeter\x12X\n\x12GetAntennaPointing\x12 .pointing.AntennaPointingRequest\x1a\x1e.pointing.AntennaPointingReply\"\x00\x42\x63\n\x1e\x66unkit.satellite-data-providerB\x14\x41ntennaPointingProtoP\x01Z)github.com/Funkit/satellite-data-providerb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0epointing.proto\x12\x08pointing\x1a\x0e\x64\x61tetime.proto\"\x9f\x01\n\x16\x41ntennaPointingRequest\x12=\n\x15satellite_information\x18\x01 \x01(\x0b\x32\x1e.pointing.SatelliteInformation\x12\x46\n\x1aground_station_information\x18\x02 \x01(\x0b\x32\".pointing.GroundStationInformation\"V\n\x14SatelliteInformation\x12\x16\n\x0esatellite_name\x18\x01 \x01(\t\x12\x12\n\ntle_line_1\x18\x02 \x01(\t\x12\x12\n\ntle_line_2\x18\x03 \x01(\t\"\xbe\x01\n\x18GroundStationInformation\x12\x18\n\x10station_latitude\x18\x01 \x01(\x01\x12\x19\n\x11station_longitude\x18\x02 \x01(\x01\x12\x18\n\x10station_altitude\x18\x03 \x01(\x01\x12)\n\nstart_date\x18\x04 \x01(\x0b\x32\x15.google.type.DateTime\x12(\n\tstop_date\x18\x05 \x01(\x0b\x32\x15.google.type.DateTime\"\'\n\x14\x41ntennaPointingReply\x12\x0f\n\x07message\x18\x01 \x01(\t2f\n\nProcessing\x12X\n\x12GetAntennaPointing\x12 .pointing.AntennaPointingRequest\x1a\x1e.pointing.AntennaPointingReply\"\x00\x42l\n\x1e\x66unkit.satellite-data-providerB\x14\x41ntennaPointingProtoP\x01Z2github.com/Funkit/satellite-data-provider/pointingb\x06proto3')
 
 
 
@@ -51,11 +51,11 @@ AntennaPointingReply = _reflection.GeneratedProtocolMessageType('AntennaPointing
   })
 _sym_db.RegisterMessage(AntennaPointingReply)
 
-_GREETER = DESCRIPTOR.services_by_name['Greeter']
+_PROCESSING = DESCRIPTOR.services_by_name['Processing']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\036funkit.satellite-data-providerB\024AntennaPointingProtoP\001Z)github.com/Funkit/satellite-data-provider'
+  DESCRIPTOR._serialized_options = b'\n\036funkit.satellite-data-providerB\024AntennaPointingProtoP\001Z2github.com/Funkit/satellite-data-provider/pointing'
   _ANTENNAPOINTINGREQUEST._serialized_start=45
   _ANTENNAPOINTINGREQUEST._serialized_end=204
   _SATELLITEINFORMATION._serialized_start=206
@@ -64,6 +64,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _GROUNDSTATIONINFORMATION._serialized_end=485
   _ANTENNAPOINTINGREPLY._serialized_start=487
   _ANTENNAPOINTINGREPLY._serialized_end=526
-  _GREETER._serialized_start=528
-  _GREETER._serialized_end=627
+  _PROCESSING._serialized_start=528
+  _PROCESSING._serialized_end=630
 # @@protoc_insertion_point(module_scope)

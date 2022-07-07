@@ -1,1 +1,1 @@
-protoc --go_out=./api-composer --go_opt=paths=source_relative --go-grpc_out=./api-composer --go-grpc_opt=paths=source_relative proto/pointing.proto
+protoc --proto_path=./proto --go_out=./api-composer/pointing --go_opt=paths=source_relative --go-grpc_out=./api-composer/pointing --go-grpc_opt=paths=source_relative proto/pointing.proto

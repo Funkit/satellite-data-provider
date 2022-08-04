@@ -1,7 +1,8 @@
 import ephem
 from datetime import datetime, timedelta
 
-def GetRange(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, computation_date):
+
+def get_range(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, computation_date):
     satellite = ephem.readtle(satellite_name, tle_line_1, tle_line_2)
 
     city = ephem.Observer()
@@ -9,7 +10,8 @@ def GetRange(satellite_name, tle_line_1, tle_line_2, station_latitude, station_l
     satellite.compute(city)
     return satellite.az, satellite.alt, satellite.range
 
-def GetPointingRangeList(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, date_start, date_stop):
+
+def get_pointing_range_list(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, date_start, date_stop):
     date_pattern = '%Y/%m/%d %H:%M:%S'
 
     datetime_start = datetime.strptime(date_start, date_pattern)
@@ -21,7 +23,7 @@ def GetPointingRangeList(satellite_name, tle_line_1, tle_line_2, station_latitud
         current_date = datetime_start + timedelta(0,i)
         current_date_string = current_date.strftime(date_pattern)
 
-        azimuth, elevation, range_meter = GetRange(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, current_date_string)
+        azimuth, elevation, range_meter = get_range(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, current_date_string)
         
         range_list.append({
             "date": current_date_string,

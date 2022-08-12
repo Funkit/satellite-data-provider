@@ -23,16 +23,18 @@ option java_outer_classname = "AntennaPointingProto";
 
 package pointing;
 
-// The greeting service definition.
+// This Service processes TLEs and returns various informations
 service Processing {
-  // Sends a greeting
-  rpc GetAntennaPointing (AntennaPointingRequest) returns (AntennaPointingReply) {}
+  // For a given TLE, receiving station and time range, returns the pointing information
+  rpc GetAntennaPointing (AntennaPointingRequest) returns (stream AntennaPointingReply) {}
 }
 
 // The request message containing the user's name.
 message AntennaPointingRequest { 
   SatelliteInformation satellite_information = 1;
   GroundStationInformation ground_station_information = 2;
+  google.type.DateTime start_date = 3;
+  google.type.DateTime stop_date = 4;
 }
 
 message SatelliteInformation {
@@ -45,11 +47,12 @@ message GroundStationInformation {
   double station_latitude = 1;
   double station_longitude = 2;
   double station_altitude = 3;
-  google.type.DateTime start_date = 4;
-  google.type.DateTime stop_date = 5;
 }
 
-// The response message containing the greetings
 message AntennaPointingReply {
-  string message = 1;
+  string satellite_name = 1;
+  google.type.DateTime date = 2;
+  double azimuth = 3;
+  double elevation = 4;
+  double range_meters = 5;
 }

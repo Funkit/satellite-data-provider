@@ -1,7 +1,7 @@
 from eph import get_pointing_range_list
 import sys
 
-print ('Number of arguments:', len(sys.argv))
+print('Number of arguments:', len(sys.argv))
 
 if len(sys.argv) != 9 :
     print("Wrong number of arguments. See README.")
@@ -15,6 +15,13 @@ station_altitude = float(sys.argv[6])
 date_start = sys.argv[7]
 date_stop = sys.argv[8]
 
-pointingRangeList = get_pointing_range_list(satellite_name, tle_line_1, tle_line_2, station_latitude, station_longitude, station_altitude, date_start, date_stop)
+pointingRangeList = get_pointing_range_list(satellite_name,
+                                            tle_line_1,
+                                            tle_line_2,
+                                            station_latitude,
+                                            station_longitude,
+                                            station_altitude,
+                                            date_start,
+                                            date_stop)
 
 print(pointingRangeList)

@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"io"
 	"log"
 	"time"
 )
@@ -57,31 +58,40 @@ func main() {
 			StationLatitude:  43.604652,
 			StationLongitude: 1.444209,
 			StationAltitude:  146,
-			StartDate: &datetime.DateTime{
-				Year:       2022,
-				Month:      7,
-				Day:        28,
-				Hours:      16,
-				Minutes:    0,
-				Seconds:    0,
-				Nanos:      0,
-				TimeOffset: nil,
-			},
-			StopDate: &datetime.DateTime{
-				Year:       2022,
-				Month:      7,
-				Day:        28,
-				Hours:      18,
-				Minutes:    0,
-				Seconds:    0,
-				Nanos:      0,
-				TimeOffset: nil,
-			},
+		},
+		StartDate: &datetime.DateTime{
+			Year:       2022,
+			Month:      7,
+			Day:        28,
+			Hours:      16,
+			Minutes:    0,
+			Seconds:    0,
+			Nanos:      0,
+			TimeOffset: nil,
+		},
+		StopDate: &datetime.DateTime{
+			Year:       2022,
+			Month:      7,
+			Day:        28,
+			Hours:      17,
+			Minutes:    0,
+			Seconds:    0,
+			Nanos:      0,
+			TimeOffset: nil,
 		},
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(ans.Message)
+	for {
+		val, err := ans.Recv()
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%v - %v: %v %v %v\n", val.SatelliteName, val.Date, val.Azimuth, val.Elevation, val.RangeMeters)
+	}
 }

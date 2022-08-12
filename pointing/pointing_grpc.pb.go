@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProcessingClient interface {
-	// Sends a greeting
-	GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (*AntennaPointingReply, error)
+	// For a given TLE, receiving station and time range, returns the pointing information
+	GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (Processing_GetAntennaPointingClient, error)
 }
 
 type processingClient struct {
@@ -34,21 +34,44 @@ func NewProcessingClient(cc grpc.ClientConnInterface) ProcessingClient {
 	return &processingClient{cc}
 }
 
-func (c *processingClient) GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (*AntennaPointingReply, error) {
-	out := new(AntennaPointingReply)
-	err := c.cc.Invoke(ctx, "/pointing.Processing/GetAntennaPointing", in, out, opts...)
+func (c *processingClient) GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (Processing_GetAntennaPointingClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Processing_ServiceDesc.Streams[0], "/pointing.Processing/GetAntennaPointing", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &processingGetAntennaPointingClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Processing_GetAntennaPointingClient interface {
+	Recv() (*AntennaPointingReply, error)
+	grpc.ClientStream
+}
+
+type processingGetAntennaPointingClient struct {
+	grpc.ClientStream
+}
+
+func (x *processingGetAntennaPointingClient) Recv() (*AntennaPointingReply, error) {
+	m := new(AntennaPointingReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // ProcessingServer is the server API for Processing service.
 // All implementations must embed UnimplementedProcessingServer
 // for forward compatibility
 type ProcessingServer interface {
-	// Sends a greeting
-	GetAntennaPointing(context.Context, *AntennaPointingRequest) (*AntennaPointingReply, error)
+	// For a given TLE, receiving station and time range, returns the pointing information
+	GetAntennaPointing(*AntennaPointingRequest, Processing_GetAntennaPointingServer) error
 	mustEmbedUnimplementedProcessingServer()
 }
 
@@ -56,8 +79,8 @@ type ProcessingServer interface {
 type UnimplementedProcessingServer struct {
 }
 
-func (UnimplementedProcessingServer) GetAntennaPointing(context.Context, *AntennaPointingRequest) (*AntennaPointingReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAntennaPointing not implemented")
+func (UnimplementedProcessingServer) GetAntennaPointing(*AntennaPointingRequest, Processing_GetAntennaPointingServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetAntennaPointing not implemented")
 }
 func (UnimplementedProcessingServer) mustEmbedUnimplementedProcessingServer() {}
 
@@ -72,22 +95,25 @@ func RegisterProcessingServer(s grpc.ServiceRegistrar, srv ProcessingServer) {
 	s.RegisterService(&Processing_ServiceDesc, srv)
 }
 
-func _Processing_GetAntennaPointing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AntennaPointingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _Processing_GetAntennaPointing_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(AntennaPointingRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(ProcessingServer).GetAntennaPointing(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pointing.Processing/GetAntennaPointing",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProcessingServer).GetAntennaPointing(ctx, req.(*AntennaPointingRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(ProcessingServer).GetAntennaPointing(m, &processingGetAntennaPointingServer{stream})
+}
+
+type Processing_GetAntennaPointingServer interface {
+	Send(*AntennaPointingReply) error
+	grpc.ServerStream
+}
+
+type processingGetAntennaPointingServer struct {
+	grpc.ServerStream
+}
+
+func (x *processingGetAntennaPointingServer) Send(m *AntennaPointingReply) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 // Processing_ServiceDesc is the grpc.ServiceDesc for Processing service.
@@ -96,12 +122,13 @@ func _Processing_GetAntennaPointing_Handler(srv interface{}, ctx context.Context
 var Processing_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pointing.Processing",
 	HandlerType: (*ProcessingServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "GetAntennaPointing",
-			Handler:    _Processing_GetAntennaPointing_Handler,
+			StreamName:    "GetAntennaPointing",
+			Handler:       _Processing_GetAntennaPointing_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "pointing.proto",
 }

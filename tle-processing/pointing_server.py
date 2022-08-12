@@ -1,16 +1,61 @@
 from concurrent import futures
+from datetime import datetime, timedelta
 import logging
+import ephem
 
 import grpc
 import pointing_pb2
+import datetime_pb2
 import pointing_pb2_grpc
+
+
+def datetime_to_grpc_datetime(date: datetime):
+    return datetime_pb2.DateTime(year=date.year,
+                                 month=date.month,
+                                 day=date.day,
+                                 hours=date.hour,
+                                 minutes=date.minute,
+                                 seconds=date.second)
+
+
+def grpc_datetime_to_datetime(date: pointing_pb2.datetime__pb2):
+    return datetime(year=date.year,
+                    month=date.month,
+                    day=date.day).replace(hour=date.hours,
+                                          minute=date.minutes,
+                                          second = date.seconds)
 
 
 class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
     """Provides methods that implement functionality of pointing server."""
 
     def GetAntennaPointing(self, request, context):
-        return pointing_pb2.AntennaPointingReply(message="Satellite name = %s" % request.satellite_information.satellite_name)
+        date_pattern = '%Y/%m/%d %H:%M:%S'
+        start_date = grpc_datetime_to_datetime(request.start_date)
+        stop_date = grpc_datetime_to_datetime(request.stop_date)
+
+        delta = stop_date - start_date
+
+        satellite = ephem.readtle(request.satellite_information.satellite_name,
+                                  request.satellite_information.tle_line_1,
+                                  request.satellite_information.tle_line_2)
+
+        city = ephem.Observer()
+        city.lon = request.ground_station_information.station_longitude
+        city.lat = request.ground_station_information.station_latitude
+        city.elevation = request.ground_station_information.station_altitude
+
+        for x in range(0, int(delta.total_seconds())):
+            current_date = start_date + timedelta(0, x)
+            current_date_string = current_date.strftime(date_pattern)
+            city.date = current_date_string
+            satellite.compute(city)
+
+            yield pointing_pb2.AntennaPointingReply(satellite_name=request.satellite_information.satellite_name,
+                                                    date=datetime_to_grpc_datetime(datetime.now()+ timedelta(hours=x)),
+                                                    azimuth=satellite.az,
+                                                    elevation=satellite.alt,
+                                                    range_meters=satellite.range)
 
 
 def serve():

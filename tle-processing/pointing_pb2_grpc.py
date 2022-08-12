@@ -6,7 +6,7 @@ import pointing_pb2 as pointing__pb2
 
 
 class ProcessingStub(object):
-    """The greeting service definition.
+    """This Service processes TLEs and returns various informations
     """
 
     def __init__(self, channel):
@@ -15,7 +15,7 @@ class ProcessingStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetAntennaPointing = channel.unary_unary(
+        self.GetAntennaPointing = channel.unary_stream(
                 '/pointing.Processing/GetAntennaPointing',
                 request_serializer=pointing__pb2.AntennaPointingRequest.SerializeToString,
                 response_deserializer=pointing__pb2.AntennaPointingReply.FromString,
@@ -23,11 +23,11 @@ class ProcessingStub(object):
 
 
 class ProcessingServicer(object):
-    """The greeting service definition.
+    """This Service processes TLEs and returns various informations
     """
 
     def GetAntennaPointing(self, request, context):
-        """Sends a greeting
+        """For a given TLE, receiving station and time range, returns the pointing information
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -36,7 +36,7 @@ class ProcessingServicer(object):
 
 def add_ProcessingServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetAntennaPointing': grpc.unary_unary_rpc_method_handler(
+            'GetAntennaPointing': grpc.unary_stream_rpc_method_handler(
                     servicer.GetAntennaPointing,
                     request_deserializer=pointing__pb2.AntennaPointingRequest.FromString,
                     response_serializer=pointing__pb2.AntennaPointingReply.SerializeToString,
@@ -49,7 +49,7 @@ def add_ProcessingServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Processing(object):
-    """The greeting service definition.
+    """This Service processes TLEs and returns various informations
     """
 
     @staticmethod
@@ -63,7 +63,7 @@ class Processing(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/pointing.Processing/GetAntennaPointing',
+        return grpc.experimental.unary_stream(request, target, '/pointing.Processing/GetAntennaPointing',
             pointing__pb2.AntennaPointingRequest.SerializeToString,
             pointing__pb2.AntennaPointingReply.FromString,
             options, channel_credentials,

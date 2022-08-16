@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ProcessingClient interface {
 	// For a given TLE, receiving station and time range, returns the pointing information
 	GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (Processing_GetAntennaPointingClient, error)
+	GetNextPass(ctx context.Context, in *NextPassRequest, opts ...grpc.CallOption) (Processing_GetNextPassClient, error)
 }
 
 type processingClient struct {
@@ -66,12 +67,45 @@ func (x *processingGetAntennaPointingClient) Recv() (*AntennaPointingReply, erro
 	return m, nil
 }
 
+func (c *processingClient) GetNextPass(ctx context.Context, in *NextPassRequest, opts ...grpc.CallOption) (Processing_GetNextPassClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Processing_ServiceDesc.Streams[1], "/pointing.Processing/GetNextPass", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &processingGetNextPassClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Processing_GetNextPassClient interface {
+	Recv() (*AntennaPointingReply, error)
+	grpc.ClientStream
+}
+
+type processingGetNextPassClient struct {
+	grpc.ClientStream
+}
+
+func (x *processingGetNextPassClient) Recv() (*AntennaPointingReply, error) {
+	m := new(AntennaPointingReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ProcessingServer is the server API for Processing service.
 // All implementations must embed UnimplementedProcessingServer
 // for forward compatibility
 type ProcessingServer interface {
 	// For a given TLE, receiving station and time range, returns the pointing information
 	GetAntennaPointing(*AntennaPointingRequest, Processing_GetAntennaPointingServer) error
+	GetNextPass(*NextPassRequest, Processing_GetNextPassServer) error
 	mustEmbedUnimplementedProcessingServer()
 }
 
@@ -81,6 +115,9 @@ type UnimplementedProcessingServer struct {
 
 func (UnimplementedProcessingServer) GetAntennaPointing(*AntennaPointingRequest, Processing_GetAntennaPointingServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetAntennaPointing not implemented")
+}
+func (UnimplementedProcessingServer) GetNextPass(*NextPassRequest, Processing_GetNextPassServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetNextPass not implemented")
 }
 func (UnimplementedProcessingServer) mustEmbedUnimplementedProcessingServer() {}
 
@@ -116,6 +153,27 @@ func (x *processingGetAntennaPointingServer) Send(m *AntennaPointingReply) error
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Processing_GetNextPass_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NextPassRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ProcessingServer).GetNextPass(m, &processingGetNextPassServer{stream})
+}
+
+type Processing_GetNextPassServer interface {
+	Send(*AntennaPointingReply) error
+	grpc.ServerStream
+}
+
+type processingGetNextPassServer struct {
+	grpc.ServerStream
+}
+
+func (x *processingGetNextPassServer) Send(m *AntennaPointingReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Processing_ServiceDesc is the grpc.ServiceDesc for Processing service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -127,6 +185,11 @@ var Processing_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetAntennaPointing",
 			Handler:       _Processing_GetAntennaPointing_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetNextPass",
+			Handler:       _Processing_GetNextPass_Handler,
 			ServerStreams: true,
 		},
 	},

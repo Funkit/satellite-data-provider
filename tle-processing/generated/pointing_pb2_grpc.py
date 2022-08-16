@@ -20,6 +20,11 @@ class ProcessingStub(object):
                 request_serializer=pointing__pb2.AntennaPointingRequest.SerializeToString,
                 response_deserializer=pointing__pb2.AntennaPointingReply.FromString,
                 )
+        self.GetNextPass = channel.unary_stream(
+                '/pointing.Processing/GetNextPass',
+                request_serializer=pointing__pb2.NextPassRequest.SerializeToString,
+                response_deserializer=pointing__pb2.AntennaPointingReply.FromString,
+                )
 
 
 class ProcessingServicer(object):
@@ -33,12 +38,23 @@ class ProcessingServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetNextPass(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ProcessingServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetAntennaPointing': grpc.unary_stream_rpc_method_handler(
                     servicer.GetAntennaPointing,
                     request_deserializer=pointing__pb2.AntennaPointingRequest.FromString,
+                    response_serializer=pointing__pb2.AntennaPointingReply.SerializeToString,
+            ),
+            'GetNextPass': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetNextPass,
+                    request_deserializer=pointing__pb2.NextPassRequest.FromString,
                     response_serializer=pointing__pb2.AntennaPointingReply.SerializeToString,
             ),
     }
@@ -65,6 +81,23 @@ class Processing(object):
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/pointing.Processing/GetAntennaPointing',
             pointing__pb2.AntennaPointingRequest.SerializeToString,
+            pointing__pb2.AntennaPointingReply.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetNextPass(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/pointing.Processing/GetNextPass',
+            pointing__pb2.NextPassRequest.SerializeToString,
             pointing__pb2.AntennaPointingReply.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

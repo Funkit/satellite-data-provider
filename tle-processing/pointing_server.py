@@ -4,9 +4,7 @@ import logging
 import ephem
 
 import grpc
-import pointing_pb2
-import datetime_pb2
-import pointing_pb2_grpc
+from generated import datetime_pb2, datetime_pb2_grpc, pointing_pb2, pointing_pb2_grpc
 
 
 def datetime_to_grpc_datetime(date: datetime):

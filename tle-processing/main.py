@@ -1,27 +1,25 @@
-from eph import get_pointing_range_list
-import sys
+import ephem
+from datetime import datetime
 
-print('Number of arguments:', len(sys.argv))
+satellite_name = "STARLINK-24             "
+tle_line_1 = "1 44238U 19029D   22228.14008782  .00099335  00000+0  21125-2 0  9999"
+tle_line_2 = "2 44238  53.0033 188.1678 0002676 113.9454 246.1831 15.44197523179085"
+station_latitude = 43.604652
+station_longitude = 1.444209
+station_altitude = 146
+date_start = "2022/08/16 10:40:00"
+date_stop = "2022/08/16 11:40:00"
 
-if len(sys.argv) != 9 :
-    print("Wrong number of arguments. See README.")
+satellite = ephem.readtle(satellite_name, tle_line_1, tle_line_2)
 
-satellite_name = sys.argv[1]
-tle_line_1 = sys.argv[2]
-tle_line_2 = sys.argv[3]
-station_latitude = float(sys.argv[4])
-station_longitude = float(sys.argv[5])
-station_altitude = float(sys.argv[6])
-date_start = sys.argv[7]
-date_stop = sys.argv[8]
+city = ephem.Observer()
+city.lon = station_longitude
+city.lat = station_latitude
+city.elevation = station_altitude
 
-pointingRangeList = get_pointing_range_list(satellite_name,
-                                            tle_line_1,
-                                            tle_line_2,
-                                            station_latitude,
-                                            station_longitude,
-                                            station_altitude,
-                                            date_start,
-                                            date_stop)
+current_time = datetime(2022, 8, 16, 12, 0, 0)
+city.date = current_time
 
-print(pointingRangeList)
+output = city.next_pass(body=satellite)
+
+print(output[0])

@@ -23,7 +23,7 @@ def grpc_datetime_to_datetime(date: pointing_pb2.datetime__pb2):
                     month=date.month,
                     day=date.day).replace(hour=date.hours,
                                           minute=date.minutes,
-                                          second = date.seconds)
+                                          second=date.seconds)
 
 
 class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
@@ -34,7 +34,7 @@ class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
         start_date = grpc_datetime_to_datetime(request.start_date)
         stop_date = grpc_datetime_to_datetime(request.stop_date)
 
-        delta = stop_date - start_date
+        delta = int((stop_date - start_date).total_seconds())
 
         satellite = ephem.readtle(request.satellite_information.satellite_name,
                                   request.satellite_information.tle_line_1,
@@ -45,7 +45,7 @@ class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
         city.lat = request.ground_station_information.station_latitude
         city.elevation = request.ground_station_information.station_altitude
 
-        for x in range(0, int(delta.total_seconds())):
+        for x in range(0, delta):
             current_date = start_date + timedelta(0, x)
             current_date_string = current_date.strftime(date_pattern)
             city.date = current_date_string

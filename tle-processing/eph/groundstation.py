@@ -120,6 +120,9 @@ class Station:
                         earliest_sat_name = satellites[i].name
                         earliest_sat_index = i
 
+            if len(earliest_sat_pass) == 0:
+                return output
+
             output.append({
                 'name': earliest_sat_name,
                 'pass': earliest_sat_pass

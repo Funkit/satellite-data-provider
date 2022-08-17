@@ -87,8 +87,8 @@ class Station:
 
         return output
 
-    def ordered_passes(self, satellites: list, reference_date: datetime, end_date: datetime,
-                       minimum_pass_time_sec: int = 10) -> list:
+    def next_available_passes_sequence(self, satellites: list, reference_date: datetime, end_date: datetime,
+                                       minimum_pass_time_sec: int = 10) -> list:
 
         delta = int((end_date - reference_date).total_seconds())
 

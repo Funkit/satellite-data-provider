@@ -89,7 +89,7 @@ def test_4():
                                     longitude=1.444209,
                                     altitude=146)
 
-    passes = station.ordered_passes(sat_list, datetime.now(), datetime.now() + timedelta(hours=4), 100)
+    passes = station.next_available_passes_sequence(sat_list, datetime.now(), datetime.now() + timedelta(hours=4), 100)
 
     for item in passes:
         print(item)

@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 from . import utils
 
 
-class Station(object):
-    def __init__(self, latitude: float, longitude: float, altitude: float,
+class Station:
+    def __init__(self, name: str, latitude: float, longitude: float, altitude: float,
                  minimum_elevation: float = 0, positioning_timeout_sec: int = 0):
+        self.name = name
         self.obs = ephem.Observer()
         self.obs.lat = latitude
         self.obs.lon = longitude
@@ -31,13 +32,12 @@ class Station(object):
             current_date_string = current_date.strftime(utils.PYEPHEM_DATE_PATTERN)
             self.obs.date = current_date_string
             satellite.compute(self.obs)
-            if satellite.alt > self.minimum_elevation:
-                output.append({
-                    "date": current_date_string,
-                    "azimuth": satellite.az,
-                    "elevation": satellite.alt,
-                    "range": satellite.range
-                })
+            output.append({
+                "date": current_date_string,
+                "azimuth": satellite.az,
+                "elevation": satellite.alt,
+                "range": satellite.range
+            })
 
         return output
 

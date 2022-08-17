@@ -45,19 +45,20 @@ class Station:
                             minimum_pass_time_sec: int = 10) -> list:
 
         delta = int((end_date - reference_date).total_seconds())
+
         if delta < 0:
             raise ValueError("end_date cannot be before reference_date")
 
-        ref_date = reference_date
+        if delta > utils.SECONDS_IN_DAY:
+            raise ValueError("maximum allowed time delta between end_date and reference_date is 24 hours")
 
+        ref_date = reference_date
         while int((end_date - ref_date).total_seconds()) > 0:
             self.obs.date = ref_date
             satellite_pass = self.obs.next_pass(satellite)
-            if utils.radians_to_degrees(satellite_pass[3]) > self.minimum_elevation:
-                start_date = satellite_pass[0].datetime()
-                stop_date = satellite_pass[4].datetime()
 
-                delta = int((stop_date - start_date).total_seconds())
+            if utils.radians_to_degrees(satellite_pass[3]) > self.minimum_elevation:
+                delta = int((satellite_pass[4].datetime() - satellite_pass[0].datetime()).total_seconds())
 
                 if delta >= minimum_pass_time_sec:
                     return self.next_pass(satellite, ref_date)

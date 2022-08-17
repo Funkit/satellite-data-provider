@@ -41,14 +41,6 @@ class Station:
 
         return output
 
-    def pass_is_available(self, sat_pass, reference_date: datetime = datetime.now(), minimum_pass_time_sec: int = 10):
-        if len(sat_pass) == 6:
-            if utils.radians_to_degrees(sat_pass[3]) > self.minimum_elevation:
-                delta = int((sat_pass[4].datetime() - sat_pass[0].datetime()).total_seconds())
-                if delta >= minimum_pass_time_sec:
-                    return True
-        return False
-
     def next_available_pass(self, satellite, reference_date: datetime, end_date: datetime,
                             minimum_pass_time_sec: int = 10) -> list:
 
@@ -66,8 +58,6 @@ class Station:
             satellite_pass = self.obs.next_pass(satellite)
 
             if utils.radians_to_degrees(satellite_pass[3]) > self.minimum_elevation:
-                delta = int((satellite_pass[4].datetime() - satellite_pass[0].datetime()).total_seconds())
-
                 sat_pass = self.next_pass(satellite, ref_date)
                 if len(sat_pass) > minimum_pass_time_sec:
                     return sat_pass
@@ -94,5 +84,50 @@ class Station:
                                                               reference_date,
                                                               end_date,
                                                               minimum_pass_time_sec)
+
+        return output
+
+    def ordered_passes(self, satellites: list, reference_date: datetime, end_date: datetime,
+                       minimum_pass_time_sec: int = 10) -> list:
+
+        delta = int((end_date - reference_date).total_seconds())
+
+        if delta < 0:
+            raise ValueError("end_date cannot be before reference_date")
+
+        if delta > utils.SECONDS_IN_DAY:
+            raise ValueError("maximum allowed time delta between end_date and reference_date is 24 hours")
+
+        output = []
+
+        ref_date = reference_date
+
+        while int((end_date - ref_date).total_seconds()) > minimum_pass_time_sec \
+                and len(satellites) > 0:
+            earliest_sat_name = ""
+            earliest_sat_index = -1
+            earliest_sat_pass = []
+            earliest_sat_date = end_date
+
+            # TODO: satellites copy ?
+            for i in range(len(satellites)):
+                sat_pass = self.next_available_pass(satellites[i], ref_date, end_date, minimum_pass_time_sec)
+                if len(sat_pass) > 0:
+                    dt = datetime.strptime(sat_pass[0]['date'], utils.PYEPHEM_DATE_PATTERN)
+                    if dt < earliest_sat_date:
+                        earliest_sat_date = dt
+                        earliest_sat_pass = sat_pass
+                        earliest_sat_name = satellites[i].name
+                        earliest_sat_index = i
+
+            output.append({
+                'name': earliest_sat_name,
+                'pass': earliest_sat_pass
+            })
+
+            del satellites[earliest_sat_index]
+
+            ref_date = datetime.strptime(earliest_sat_pass[-1]['date'], utils.PYEPHEM_DATE_PATTERN)
+            ref_date = ref_date + timedelta(seconds=self.positioning_timeout_sec)
 
         return output

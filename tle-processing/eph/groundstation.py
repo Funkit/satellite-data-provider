@@ -31,14 +31,23 @@ class Station:
             current_date_string = current_date.strftime(utils.PYEPHEM_DATE_PATTERN)
             self.obs.date = current_date_string
             satellite.compute(self.obs)
-            output.append({
-                "date": current_date_string,
-                "azimuth": satellite.az,
-                "elevation": satellite.alt,
-                "range": satellite.range
-            })
+            if utils.radians_to_degrees(satellite.alt) > self.minimum_elevation:
+                output.append({
+                    "date": current_date_string,
+                    "azimuth": satellite.az,
+                    "elevation": satellite.alt,
+                    "range": satellite.range
+                })
 
         return output
+
+    def pass_is_available(self, sat_pass, reference_date: datetime = datetime.now(), minimum_pass_time_sec: int = 10):
+        if len(sat_pass) == 6:
+            if utils.radians_to_degrees(sat_pass[3]) > self.minimum_elevation:
+                delta = int((sat_pass[4].datetime() - sat_pass[0].datetime()).total_seconds())
+                if delta >= minimum_pass_time_sec:
+                    return True
+        return False
 
     def next_available_pass(self, satellite, reference_date: datetime, end_date: datetime,
                             minimum_pass_time_sec: int = 10) -> list:
@@ -59,15 +68,16 @@ class Station:
             if utils.radians_to_degrees(satellite_pass[3]) > self.minimum_elevation:
                 delta = int((satellite_pass[4].datetime() - satellite_pass[0].datetime()).total_seconds())
 
-                if delta >= minimum_pass_time_sec:
-                    return self.next_pass(satellite, ref_date)
+                sat_pass = self.next_pass(satellite, ref_date)
+                if len(sat_pass) > minimum_pass_time_sec:
+                    return sat_pass
 
             ref_date = satellite_pass[4].datetime()
 
         return []
 
-    def find_next_passes(self, satellites, reference_date: datetime, end_date: datetime,
-                         minimum_pass_time_sec: int = 10) -> dict:
+    def next_available_passes(self, satellites, reference_date: datetime, end_date: datetime,
+                              minimum_pass_time_sec: int = 10) -> dict:
 
         delta = int((end_date - reference_date).total_seconds())
 

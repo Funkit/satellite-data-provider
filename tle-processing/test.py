@@ -62,7 +62,7 @@ def test_3():
                                     longitude=1.444209,
                                     altitude=146)
 
-    passes = station.find_next_passes(sat_list, datetime.now(), datetime.now() + timedelta(hours=24), 100)
+    passes = station.next_available_passes(sat_list, datetime.now(), datetime.now() + timedelta(hours=24), 100)
 
     for item in passes:
         print(item)

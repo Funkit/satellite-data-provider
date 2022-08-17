@@ -1,6 +1,6 @@
 import ephem
-from datetime import datetime
-from eph.groundstation import Station
+from datetime import datetime, timedelta
+from eph import groundstation
 
 
 def test_1():
@@ -37,9 +37,9 @@ def test_2():
     station_altitude = 146
 
     satellite = ephem.readtle(satellite_name, tle_line_1, tle_line_2)
-    station = Station(station_latitude, station_longitude, station_altitude)
+    station = groundstation.Station(station_latitude, station_longitude, station_altitude)
 
-    pos = station.next_pass(satellite, datetime.now())
+    pos = station.next_available_pass(satellite, datetime.now(), datetime.now() + timedelta(hours=24), 100)
 
     for item in pos:
         print(item)

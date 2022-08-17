@@ -8,7 +8,7 @@ import grpc
 import pointing_pb2
 import pointing_pb2_grpc
 from datetimeutils import grpc_datetime_to_datetime, datetime_to_grpc_datetime
-from eph.groundstation import PYEPHEM_DATE_PATTERN
+from eph.utils import PYEPHEM_DATE_PATTERN
 
 
 class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):

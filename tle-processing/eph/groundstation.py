@@ -20,7 +20,6 @@ class Station:
         self.obs.date = reference_date
         satellite_pass = self.obs.next_pass(satellite)
 
-        max_altitude = satellite_pass[3]
         # TODO: satellite copy ?
         start_date = satellite_pass[0].datetime()
         stop_date = satellite_pass[4].datetime()
@@ -66,3 +65,24 @@ class Station:
             ref_date = satellite_pass[4].datetime()
 
         return []
+
+    def find_next_passes(self, satellites, reference_date: datetime, end_date: datetime,
+                         minimum_pass_time_sec: int = 10) -> dict:
+
+        delta = int((end_date - reference_date).total_seconds())
+
+        if delta < 0:
+            raise ValueError("end_date cannot be before reference_date")
+
+        if delta > utils.SECONDS_IN_DAY:
+            raise ValueError("maximum allowed time delta between end_date and reference_date is 24 hours")
+
+        output = {}
+
+        for satellite in satellites:
+            output[satellite.name] = self.next_available_pass(satellite,
+                                                              reference_date,
+                                                              end_date,
+                                                              minimum_pass_time_sec)
+
+        return output

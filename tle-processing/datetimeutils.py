@@ -1,5 +1,6 @@
 from datetime import datetime
-import datetime_pb2, pointing_pb2
+import datetime_pb2
+import pointing_pb2
 
 
 def datetime_to_grpc_datetime(date: datetime):

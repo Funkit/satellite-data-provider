@@ -44,5 +44,30 @@ def test_2():
         print(item)
 
 
+def test_3():
+    satellite1 = ephem.readtle("STARLINK-24",
+                               "1 44238U 19029D   22229.17555387  .00106534  00000+0  22460-2 0  9994",
+                               "2 44238  53.0031 183.2357 0002897 123.7131 236.4150 15.44417471179240")
+    satellite2 = ephem.readtle("STARLINK-71",
+                               "1 44252U 19029T   22229.15356155  .00092076  00000+0  18178-2 0  9996",
+                               "2 44252  52.9924 177.9864 0003905 111.8634 248.2787 15.46410461179314")
+    satellite3 = ephem.readtle("STARLINK-1007",
+                               "1 44713U 19074A   22228.79595905  .00001502  00000+0  11967-3 0  9999",
+                               "2 44713  53.0557 266.5525 0001331  77.7034 282.4104 15.06400880152677")
+
+    sat_list = [satellite1, satellite2, satellite3]
+
+    station = groundstation.Station(name="Toulouse",
+                                    latitude=43.604652,
+                                    longitude=1.444209,
+                                    altitude=146)
+
+    passes = station.find_next_passes(sat_list, datetime.now(), datetime.now() + timedelta(hours=24), 100)
+
+    for item in passes:
+        print(item)
+        print(passes[item])
+
+
 if __name__ == '__main__':
-    test_2()
+    test_3()

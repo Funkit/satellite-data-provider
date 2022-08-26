@@ -28,7 +28,7 @@ def format_satellite_passes(satellite_passes):
 
 
 class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
-    """Provides methods that implement functionality of pointing server."""
+    """Provides methods that implement functionality of sattrack server."""
 
     def GetNextPass(self, request, context):
         start_date = grpc_datetime_to_datetime(request.start_date)

@@ -43,7 +43,7 @@ def get_schedule(stations: list[groundstation.Station], satellites, start_date: 
         output.append({
             "satellite": earliest_sat_name,
             "station": earliest_sat_station.name,
-            "pass": earliest_sat_pass
+            "coordinates": earliest_sat_pass
         })
 
         previous_station_name = earliest_sat_station.name

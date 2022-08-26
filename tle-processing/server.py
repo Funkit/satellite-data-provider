@@ -19,7 +19,7 @@ def format_satellite_passes(satellite_passes):
                                                            azimuth=x['azimuth'],
                                                            elevation=x['elevation'],
                                                            range_meters=x['range'])
-                          for x in sat_pass['pass']]
+                          for x in sat_pass['coordinates']]
         output.append(pointing_pb2.NextPassReply(satellite_name=sat_pass['satellite'],
                                                  station_name=sat_pass['station'],
                                                  pointing=formatted_pass))
@@ -91,9 +91,9 @@ class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
                                           station.minimum_elevation,
                                           station.station_positioning_delay_sec) for station in request.stations]
 
-        passes = schedule.get_schedule(stations, satellites, start_date, stop_date)
+        satellite_passes = schedule.get_schedule(stations, satellites, start_date, stop_date)
 
-        return pointing_pb2.ScheduleReply(passes=format_satellite_passes(passes))
+        return pointing_pb2.ScheduleReply(satellite_passes=format_satellite_passes(satellite_passes))
 
 
 def serve():

@@ -45,7 +45,7 @@ class Station:
         return start_date, stop_date, output
 
     def next_available_pass(self, satellite, start_date: datetime, end_date: datetime,
-                            minimum_pass_time_sec: int = 10) -> list:
+                            minimum_pass_time_sec: int = 10) -> list[dict]:
         """
         Returns the next availability window between start_date and end_date where
         there are at least minimum_pass_time_sec position samples with elevation above self.minimum_elevation
@@ -170,7 +170,7 @@ class Station:
 
             output.append({
                 'name': earliest_sat_name,
-                'pass': earliest_sat_pass
+                'coordinates': earliest_sat_pass
             })
 
             del satellites[earliest_sat_index]

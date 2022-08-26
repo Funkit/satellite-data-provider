@@ -87,5 +87,5 @@ message SatMon {
 }
 
 message ScheduleReply {
-  repeated NextPassReply passes = 1;
+  repeated NextPassReply satellite_passes = 1;
 }

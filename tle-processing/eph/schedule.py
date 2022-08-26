@@ -54,3 +54,37 @@ def get_schedule(stations: list[groundstation.Station], satellites, start_date: 
         ref_date = datetime.strptime(earliest_sat_pass[-1]['date'], utils.PYEPHEM_DATE_PATTERN)
 
     return output
+
+
+def get_next_pass(satellite, ground_stations: list[groundstation.Station], start_date: datetime, stop_date: datetime,
+                  minimum_pass_length_sec: int = 10):
+    earliest_pass = []
+    earliest_pass_date = stop_date
+    earliest_station_name = ""
+
+    for station in ground_stations:
+        sat_pass = station.next_available_pass(satellite, start_date, stop_date, 10)
+        print("satellite = %s, start_date = %s, stop_date = %s, request.satellite.minimum_pass_length_sec = %d"
+              % (satellite.name,
+                 start_date,
+                 stop_date,
+                 minimum_pass_length_sec))
+
+        if len(sat_pass) > 0:
+            print("sat_pass has ", len(sat_pass), " items")
+            pass_start = datetime.strptime(sat_pass[-1]['date'], utils.PYEPHEM_DATE_PATTERN)
+            print("len(earliest_pass) == 0: ", len(earliest_pass) == 0)
+            print("pass_start < earliest_pass_date: ", pass_start < earliest_pass_date)
+            if len(earliest_pass) == 0 or pass_start < earliest_pass_date:
+                earliest_pass_date = pass_start
+                earliest_pass = sat_pass
+                earliest_station_name = station.name
+
+        if earliest_station_name == "":
+            return dict
+
+        return {
+            "satellite_name": satellite.name,
+            "station_name": earliest_station_name,
+            "pass": earliest_pass
+        }

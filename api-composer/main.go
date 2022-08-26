@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
 	"log"
 	"time"
 )
@@ -48,22 +47,30 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	ans, err := client.GetAntennaPointing(ctx, &pointing.AntennaPointingRequest{
-		SatelliteInformation: &pointing.SatelliteInformation{
-			SatelliteName: "CALSPHERE 1",
-			TleLine_1:     "1 00900U 64063C   22187.89574347  .00000359  00000+0  37304-3 0  9991",
-			TleLine_2:     "2 00900  90.1740  41.2695 0026288 328.3188  44.6768 13.73833077873339",
+	ans, err := client.GetNextPass(ctx, &pointing.NextPassRequest{
+		Satellite: &pointing.SatMon{
+			SatelliteInformation: &pointing.SatelliteInformation{
+				Name:      "STARLINK-24",
+				TleLine_1: "1 44238U 19029D   22229.17555387  .00106534  00000+0  22460-2 0  9994",
+				TleLine_2: "2 44238  53.0031 183.2357 0002897 123.7131 236.4150 15.44417471179240",
+			},
+			MinimumPassLengthSec: 20,
 		},
-		GroundStationInformation: &pointing.GroundStationInformation{
-			StationLatitude:  43.604652,
-			StationLongitude: 1.444209,
-			StationAltitude:  146,
+		GroundStations: []*pointing.GroundStationInformation{
+			{
+				Name:                       "Toulouse",
+				Latitude:                   43.604652,
+				Longitude:                  1.444209,
+				Altitude:                   146,
+				MinimumElevation:           0.5,
+				StationPositioningDelaySec: 60,
+			},
 		},
 		StartDate: &datetime.DateTime{
 			Year:       2022,
-			Month:      7,
-			Day:        28,
-			Hours:      16,
+			Month:      8,
+			Day:        25,
+			Hours:      0,
 			Minutes:    0,
 			Seconds:    0,
 			Nanos:      0,
@@ -71,11 +78,11 @@ func main() {
 		},
 		StopDate: &datetime.DateTime{
 			Year:       2022,
-			Month:      7,
-			Day:        28,
-			Hours:      17,
-			Minutes:    0,
-			Seconds:    0,
+			Month:      8,
+			Day:        25,
+			Hours:      23,
+			Minutes:    59,
+			Seconds:    59,
 			Nanos:      0,
 			TimeOffset: nil,
 		},
@@ -84,14 +91,10 @@ func main() {
 		panic(err)
 	}
 
-	for {
-		val, err := ans.Recv()
-		if err == io.EOF {
-			return
-		}
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("%v - %v: %v %v %v\n", val.SatelliteName, val.Date, val.Azimuth, val.Elevation, val.RangeMeters)
+	if len(ans.Pointing) != 0 {
+		fmt.Printf("Pass found for satellite %v at %v for station %v:\n", ans.SatelliteName, ans.Pointing[0].Date, ans.StationName)
+		fmt.Println(ans.Pointing)
+	} else {
+		fmt.Println("No pass found")
 	}
 }

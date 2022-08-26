@@ -2,5 +2,5 @@ python -m grpc_tools.protoc -I proto --python_out=./tle-processing --grpc_python
 protoc --proto_path=./proto --go_out=./pointing --go_opt=paths=source_relative --go-grpc_out=./pointing --go-grpc_opt=paths=source_relative proto/pointing.proto
 
 
-python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/generated/pointing.proto proto/generated/datetime.proto
+python -m grpc_tools.protoc -I proto --python_out=. --grpc_python_out=. proto/pointing.proto proto/datetime.proto
 

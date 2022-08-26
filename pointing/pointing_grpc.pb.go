@@ -22,9 +22,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProcessingClient interface {
-	// For a given TLE, receiving station and time range, returns the pointing information
-	GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (Processing_GetAntennaPointingClient, error)
-	GetNextPass(ctx context.Context, in *NextPassRequest, opts ...grpc.CallOption) (Processing_GetNextPassClient, error)
+	// For a given satellite, provided a list of ground stations, returns the first satellite pass that can be monitored
+	// between start_date and stop_date.
+	// A pass consists in a list of antenna pointing information (azimuth, elevation...) necessary for tracking the satellite.
+	// A pass is considered valid for a given station when the elevation is above minimum_elevation and the total pass duration is above
+	// minimum_pass_length_sec.
+	GetNextPass(ctx context.Context, in *NextPassRequest, opts ...grpc.CallOption) (*NextPassReply, error)
+	// Provided a list of satellites and ground stations, returns a list of passes that monitors as many satellites as possible between
+	// start_date and stop_date.
+	GetSchedule(ctx context.Context, in *ScheduleRequest, opts ...grpc.CallOption) (*ScheduleReply, error)
 }
 
 type processingClient struct {
@@ -35,77 +41,37 @@ func NewProcessingClient(cc grpc.ClientConnInterface) ProcessingClient {
 	return &processingClient{cc}
 }
 
-func (c *processingClient) GetAntennaPointing(ctx context.Context, in *AntennaPointingRequest, opts ...grpc.CallOption) (Processing_GetAntennaPointingClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Processing_ServiceDesc.Streams[0], "/pointing.Processing/GetAntennaPointing", opts...)
+func (c *processingClient) GetNextPass(ctx context.Context, in *NextPassRequest, opts ...grpc.CallOption) (*NextPassReply, error) {
+	out := new(NextPassReply)
+	err := c.cc.Invoke(ctx, "/pointing.Processing/GetNextPass", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &processingGetAntennaPointingClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type Processing_GetAntennaPointingClient interface {
-	Recv() (*AntennaPointingReply, error)
-	grpc.ClientStream
-}
-
-type processingGetAntennaPointingClient struct {
-	grpc.ClientStream
-}
-
-func (x *processingGetAntennaPointingClient) Recv() (*AntennaPointingReply, error) {
-	m := new(AntennaPointingReply)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *processingClient) GetNextPass(ctx context.Context, in *NextPassRequest, opts ...grpc.CallOption) (Processing_GetNextPassClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Processing_ServiceDesc.Streams[1], "/pointing.Processing/GetNextPass", opts...)
+func (c *processingClient) GetSchedule(ctx context.Context, in *ScheduleRequest, opts ...grpc.CallOption) (*ScheduleReply, error) {
+	out := new(ScheduleReply)
+	err := c.cc.Invoke(ctx, "/pointing.Processing/GetSchedule", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &processingGetNextPassClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Processing_GetNextPassClient interface {
-	Recv() (*AntennaPointingReply, error)
-	grpc.ClientStream
-}
-
-type processingGetNextPassClient struct {
-	grpc.ClientStream
-}
-
-func (x *processingGetNextPassClient) Recv() (*AntennaPointingReply, error) {
-	m := new(AntennaPointingReply)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // ProcessingServer is the server API for Processing service.
 // All implementations must embed UnimplementedProcessingServer
 // for forward compatibility
 type ProcessingServer interface {
-	// For a given TLE, receiving station and time range, returns the pointing information
-	GetAntennaPointing(*AntennaPointingRequest, Processing_GetAntennaPointingServer) error
-	GetNextPass(*NextPassRequest, Processing_GetNextPassServer) error
+	// For a given satellite, provided a list of ground stations, returns the first satellite pass that can be monitored
+	// between start_date and stop_date.
+	// A pass consists in a list of antenna pointing information (azimuth, elevation...) necessary for tracking the satellite.
+	// A pass is considered valid for a given station when the elevation is above minimum_elevation and the total pass duration is above
+	// minimum_pass_length_sec.
+	GetNextPass(context.Context, *NextPassRequest) (*NextPassReply, error)
+	// Provided a list of satellites and ground stations, returns a list of passes that monitors as many satellites as possible between
+	// start_date and stop_date.
+	GetSchedule(context.Context, *ScheduleRequest) (*ScheduleReply, error)
 	mustEmbedUnimplementedProcessingServer()
 }
 
@@ -113,11 +79,11 @@ type ProcessingServer interface {
 type UnimplementedProcessingServer struct {
 }
 
-func (UnimplementedProcessingServer) GetAntennaPointing(*AntennaPointingRequest, Processing_GetAntennaPointingServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetAntennaPointing not implemented")
+func (UnimplementedProcessingServer) GetNextPass(context.Context, *NextPassRequest) (*NextPassReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNextPass not implemented")
 }
-func (UnimplementedProcessingServer) GetNextPass(*NextPassRequest, Processing_GetNextPassServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetNextPass not implemented")
+func (UnimplementedProcessingServer) GetSchedule(context.Context, *ScheduleRequest) (*ScheduleReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSchedule not implemented")
 }
 func (UnimplementedProcessingServer) mustEmbedUnimplementedProcessingServer() {}
 
@@ -132,46 +98,40 @@ func RegisterProcessingServer(s grpc.ServiceRegistrar, srv ProcessingServer) {
 	s.RegisterService(&Processing_ServiceDesc, srv)
 }
 
-func _Processing_GetAntennaPointing_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(AntennaPointingRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Processing_GetNextPass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NextPassRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(ProcessingServer).GetAntennaPointing(m, &processingGetAntennaPointingServer{stream})
-}
-
-type Processing_GetAntennaPointingServer interface {
-	Send(*AntennaPointingReply) error
-	grpc.ServerStream
-}
-
-type processingGetAntennaPointingServer struct {
-	grpc.ServerStream
-}
-
-func (x *processingGetAntennaPointingServer) Send(m *AntennaPointingReply) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Processing_GetNextPass_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NextPassRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+	if interceptor == nil {
+		return srv.(ProcessingServer).GetNextPass(ctx, in)
 	}
-	return srv.(ProcessingServer).GetNextPass(m, &processingGetNextPassServer{stream})
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pointing.Processing/GetNextPass",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProcessingServer).GetNextPass(ctx, req.(*NextPassRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type Processing_GetNextPassServer interface {
-	Send(*AntennaPointingReply) error
-	grpc.ServerStream
-}
-
-type processingGetNextPassServer struct {
-	grpc.ServerStream
-}
-
-func (x *processingGetNextPassServer) Send(m *AntennaPointingReply) error {
-	return x.ServerStream.SendMsg(m)
+func _Processing_GetSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProcessingServer).GetSchedule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pointing.Processing/GetSchedule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProcessingServer).GetSchedule(ctx, req.(*ScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // Processing_ServiceDesc is the grpc.ServiceDesc for Processing service.
@@ -180,18 +140,16 @@ func (x *processingGetNextPassServer) Send(m *AntennaPointingReply) error {
 var Processing_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pointing.Processing",
 	HandlerType: (*ProcessingServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "GetAntennaPointing",
-			Handler:       _Processing_GetAntennaPointing_Handler,
-			ServerStreams: true,
+			MethodName: "GetNextPass",
+			Handler:    _Processing_GetNextPass_Handler,
 		},
 		{
-			StreamName:    "GetNextPass",
-			Handler:       _Processing_GetNextPass_Handler,
-			ServerStreams: true,
+			MethodName: "GetSchedule",
+			Handler:    _Processing_GetSchedule_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "pointing.proto",
 }

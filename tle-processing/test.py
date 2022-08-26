@@ -36,14 +36,13 @@ def test_2():
     station = groundstation.Station(name="Toulouse",
                                     latitude=43.604652,
                                     longitude=1.444209,
-                                    altitude=146)
+                                    altitude=146,
+                                    positioning_timeout_sec=35)
 
     pos = station.next_available_pass(satellite, datetime.now(), datetime.now() + timedelta(hours=24), 100)
 
-    print(type(pos[-1]['date']))
-
-    #for item in pos:
-    #    print(item)
+    for item in pos:
+        print(item)
 
 
 def test_3():
@@ -127,5 +126,28 @@ def test_5():
         print(item)
 
 
+def test_6():
+    sat = ephem.readtle("STARLINK-24",
+                          "1 44238U 19029D   22229.17555387  .00106534  00000+0  22460-2 0  9994",
+                          "2 44238  53.0031 183.2357 0002897 123.7131 236.4150 15.44417471179240")
+
+    station_list = [
+        groundstation.Station(name="Toulouse",
+                              latitude=43.604652,
+                              longitude=1.444209,
+                              altitude=146,
+                              positioning_timeout_sec=100),
+        groundstation.Station(name="Tokyo",
+                              latitude=35.652832,
+                              longitude=139.839478,
+                              altitude=37.153,
+                              positioning_timeout_sec=100)
+    ]
+
+    sat_pass = schedule.get_next_pass(sat, station_list, datetime.now(), datetime.now() + timedelta(hours=4), 100)
+
+    print(sat_pass)
+
+
 if __name__ == '__main__':
-    test_5()
+    test_2()

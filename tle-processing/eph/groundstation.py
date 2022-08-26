@@ -14,7 +14,7 @@ class Station:
         self.minimum_elevation = minimum_elevation_degrees
         self.positioning_timeout_sec = positioning_timeout_sec
 
-    def next_pass(self, satellite, reference_date: datetime) -> list:
+    def next_pass(self, satellite, reference_date: datetime) -> (datetime, datetime, list):
         """
         Returns a list containing the date, azimuth, elevation and range per second for next visibility window.
         """
@@ -42,7 +42,7 @@ class Station:
                 "range": satellite.range
             })
 
-        return output
+        return start_date, stop_date, output
 
     def next_available_pass(self, satellite, start_date: datetime, end_date: datetime,
                             minimum_pass_time_sec: int = 10) -> list:
@@ -62,7 +62,7 @@ class Station:
         current_date = start_date
         while int((end_date - current_date).total_seconds()) > 0:
             self.obs.date = current_date
-            satellite_pass = self.next_pass(satellite, current_date)
+            start_date, stop_date, satellite_pass = self.next_pass(satellite, current_date)
 
             available_pass = [item for item in satellite_pass if
                               item['elevation'] > self.minimum_elevation]
@@ -70,7 +70,7 @@ class Station:
             if len(available_pass) >= minimum_pass_time_sec:
                 return available_pass
 
-            current_date = satellite_pass[4].datetime()
+            current_date = stop_date
 
         return []
 

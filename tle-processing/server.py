@@ -1,6 +1,6 @@
 import logging
 from concurrent import futures
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import ephem
 import grpc
@@ -8,38 +8,51 @@ import grpc
 import pointing_pb2
 import pointing_pb2_grpc
 from datetimeutils import grpc_datetime_to_datetime, datetime_to_grpc_datetime
-from eph.utils import PYEPHEM_DATE_PATTERN
+from eph import groundstation, utils
 
 
 class ProcessingServicer(pointing_pb2_grpc.ProcessingServicer):
     """Provides methods that implement functionality of pointing server."""
 
-    def GetAntennaPointing(self, request, context):
+    def GetNextPass(self, request, context):
         start_date = grpc_datetime_to_datetime(request.start_date)
         stop_date = grpc_datetime_to_datetime(request.stop_date)
 
-        delta = int((stop_date - start_date).total_seconds())
+        satellite = ephem.readtle(request.satellite.satellite_information.name,
+                                  request.satellite.satellite_information.tle_line_1,
+                                  request.satellite.satellite_information.tle_line_2)
 
-        satellite = ephem.readtle(request.satellite_information.satellite_name,
-                                  request.satellite_information.tle_line_1,
-                                  request.satellite_information.tle_line_2)
+        earliest_pass = []
+        earliest_pass_date = stop_date
+        earliest_station_name = ""
 
-        city = ephem.Observer()
-        city.lon = request.ground_station_information.station_longitude
-        city.lat = request.ground_station_information.station_latitude
-        city.elevation = request.ground_station_information.station_altitude
+        for station in request.ground_stations:
+            st = groundstation.Station(station.name,
+                                       station.latitude,
+                                       station.longitude,
+                                       station.altitude,
+                                       station.minimum_elevation,
+                                       station.station_positioning_delay_sec)
 
-        for x in range(0, delta):
-            current_date = start_date + timedelta(0, x)
-            current_date_string = current_date.strftime(PYEPHEM_DATE_PATTERN)
-            city.date = current_date_string
-            satellite.compute(city)
+            sat_pass = st.next_available_pass(satellite, start_date, stop_date)
+            print(len(sat_pass))
 
-            yield pointing_pb2.AntennaPointingReply(satellite_name=request.satellite_information.satellite_name,
-                                                    date=datetime_to_grpc_datetime(datetime.now() + timedelta(hours=x)),
-                                                    azimuth=satellite.az,
-                                                    elevation=satellite.alt,
-                                                    range_meters=satellite.range)
+            if len(sat_pass) > 0:
+                pass_start = datetime.strptime(sat_pass[-1]['date'], utils.PYEPHEM_DATE_PATTERN)
+                if len(earliest_pass) == 0 or pass_start < earliest_pass_date:
+                    earliest_pass_date = pass_start
+                    earliest_pass = sat_pass
+                    earliest_station_name = station.name
+
+        earliest_formatted_pass = [pointing_pb2.PointingInformation(date=datetime_to_grpc_datetime(datetime.strptime(x['date'], utils.PYEPHEM_DATE_PATTERN)),
+                                                                    azimuth=x['azimuth'],
+                                                                    elevation=x['elevation'],
+                                                                    range_meters=x['range'])
+                                   for x in earliest_pass]
+
+        return pointing_pb2.NextPassReply(satellite_name=request.satellite.satellite_information.name,
+                                          station_name=earliest_station_name,
+                                          pointing=earliest_formatted_pass)
 
 
 def serve():

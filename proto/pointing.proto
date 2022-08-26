@@ -23,44 +23,69 @@ option java_outer_classname = "AntennaPointingProto";
 
 package pointing;
 
-// This Service processes TLEs and returns various informations
+// This Service processes satellite and ground station information and returns pointing information for satellite tracking.
 service Processing {
-  // For a given TLE, receiving station and time range, returns the pointing information
-  rpc GetAntennaPointing (AntennaPointingRequest) returns (stream AntennaPointingReply);
+  // For a given satellite, provided a list of ground stations, returns the first satellite pass that can be monitored
+  // between start_date and stop_date.
+  // A pass consists in a list of antenna pointing information (azimuth, elevation...) necessary for tracking the satellite.
+  // A pass is considered valid for a given station when the elevation is above minimum_elevation and the total pass duration is above
+  // minimum_pass_length_sec.
+  rpc GetNextPass (NextPassRequest) returns (NextPassReply);
 
-  rpc GetNextPass (NextPassRequest) returns (stream AntennaPointingReply);
+  // Provided a list of satellites and ground stations, returns a list of passes that monitors as many satellites as possible between
+  // start_date and stop_date.
+  rpc GetSchedule (ScheduleRequest) returns (ScheduleReply);
 }
 
-// The request message containing the user's name.
-message AntennaPointingRequest { 
-  SatelliteInformation satellite_information = 1;
-  GroundStationInformation ground_station_information = 2;
-  google.type.DateTime start_date = 3;
-  google.type.DateTime stop_date = 4;
-}
 
 message SatelliteInformation {
-  string satellite_name = 1;
+  string name = 1;
   string tle_line_1 = 2;
   string tle_line_2 = 3;
 }
 
 message GroundStationInformation {
-  double station_latitude = 1;
-  double station_longitude = 2;
-  double station_altitude = 3;
-}
-
-message AntennaPointingReply {
-  string satellite_name = 1;
-  google.type.DateTime date = 2;
-  double azimuth = 3;
-  double elevation = 4;
-  double range_meters = 5;
+  string name = 1;
+  double latitude = 2;
+  double longitude = 3;
+  double altitude = 4;
+  double minimum_elevation = 5;
+  int32 station_positioning_delay_sec = 6; // Time necessary for a ground station to reposition between passes.
 }
 
 message NextPassRequest {
+  SatMon satellite = 1;
+  repeated GroundStationInformation ground_stations = 2;
+  google.type.DateTime start_date = 3;
+  google.type.DateTime stop_date = 4;
+}
+
+message NextPassReply {
+  string satellite_name = 1;
+  string station_name = 2;
+  repeated PointingInformation pointing = 3;
+}
+
+message PointingInformation {
+  reserved 4; // For polarization maybe ?
+  google.type.DateTime date = 1;
+  double azimuth = 2;
+  double elevation = 3;
+  double range_meters = 5;
+}
+
+message ScheduleRequest {
+  repeated SatMon satellites = 1;
+  repeated GroundStationInformation ground_station_information = 3;
+  google.type.DateTime start_date = 4;
+  google.type.DateTime stop_date = 5;
+}
+
+message SatMon {
   SatelliteInformation satellite_information = 1;
-  GroundStationInformation ground_station_information = 2;
-  google.type.DateTime reference_date = 3;
+  int32 minimum_pass_length_sec = 2;
+}
+
+message ScheduleReply {
+  repeated NextPassReply passes = 1;
 }

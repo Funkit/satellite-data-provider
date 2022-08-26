@@ -76,7 +76,7 @@ message PointingInformation {
 
 message ScheduleRequest {
   repeated SatMon satellites = 1;
-  repeated GroundStationInformation ground_station_information = 3;
+  repeated GroundStationInformation stations = 3;
   google.type.DateTime start_date = 4;
   google.type.DateTime stop_date = 5;
 }

@@ -2,8 +2,7 @@ from datetime import datetime, timedelta
 from . import utils, groundstation
 
 
-def get_schedule(stations: list[groundstation.Station], satellites, start_date: datetime, end_date: datetime,
-                 minimum_pass_time_sec: int = 10) -> list:
+def get_schedule(stations: list[groundstation.Station], satellites, start_date: datetime, end_date: datetime) -> list:
 
     delta = int((end_date - start_date).total_seconds())
 
@@ -18,8 +17,7 @@ def get_schedule(stations: list[groundstation.Station], satellites, start_date: 
     # TODO: copy satellites ?
     ref_date = start_date
     previous_station_name = ""
-    while int((end_date - ref_date).total_seconds()) > minimum_pass_time_sec \
-            and len(satellites) > 0:
+    while end_date > ref_date and len(satellites) > 0:
         earliest_sat_name = ""
         earliest_sat_pass = []
         earliest_sat_index = -1
@@ -27,14 +25,15 @@ def get_schedule(stations: list[groundstation.Station], satellites, start_date: 
         earliest_sat_date = end_date
         for i in range(len(satellites)):
             for station in stations:
-                sat_pass = station.next_available_pass(satellites[i], ref_date, end_date, minimum_pass_time_sec)
+                sat_pass = station.next_available_pass(satellites[i]['info'], ref_date, end_date, satellites[i]['minimum_pass_length'])
                 if len(sat_pass) != 0:
                     dt = datetime.strptime(sat_pass[0]['date'], utils.PYEPHEM_DATE_PATTERN)
-                    if ((station.name != previous_station_name) and (dt  < earliest_sat_date)) or \
-                            ((station.name == previous_station_name) and (dt  < earliest_sat_date + timedelta(seconds=station.positioning_timeout_sec))):
+                    if ((station.name != previous_station_name) and (dt < earliest_sat_date)) or \
+                            ((station.name == previous_station_name) and
+                             (dt < earliest_sat_date + timedelta(seconds=station.positioning_timeout_sec))):
                         earliest_sat_date = dt
                         earliest_sat_pass = sat_pass
-                        earliest_sat_name = satellites[i].name
+                        earliest_sat_name = satellites[i]['info'].name
                         earliest_sat_station = station
                         earliest_sat_index = i
 

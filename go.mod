@@ -9,6 +9,9 @@ require (
 )
 
 require (
+	github.com/Funkit/go-utils v0.0.0-20220823115447-58380e18fc10 // indirect
+	github.com/go-chi/chi/v5 v5.0.7 // indirect
+	github.com/go-chi/render v1.0.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect

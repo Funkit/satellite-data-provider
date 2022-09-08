@@ -30,6 +30,12 @@ func TimeToGRPCDatetime(dt time.Time) *datetime.DateTime {
 	}
 }
 
+type Source interface {
+	Connect() error
+	Close()
+	GetSchedule(satellites []*pointing.SatMon, stations []*pointing.GroundStationInformation, startDate, stopDate time.Time, ctx context.Context) ([]*pointing.NextPassReply, error)
+}
+
 type Client struct {
 	serverAddress string
 	grpcClient    pointing.ProcessingClient

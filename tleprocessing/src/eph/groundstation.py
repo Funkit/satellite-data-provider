@@ -1,3 +1,4 @@
+from typing import Tuple
 import ephem
 from datetime import datetime, timedelta
 from . import utils
@@ -14,7 +15,7 @@ class Station:
         self.minimum_elevation = minimum_elevation_degrees
         self.positioning_timeout_sec = positioning_timeout_sec
 
-    def next_pass(self, satellite, reference_date: datetime) -> (datetime, datetime, list):
+    def next_pass(self, satellite, reference_date: datetime) -> Tuple[datetime, datetime, list]:
         """
         Returns a list containing the date, azimuth, elevation and range per second for next visibility window.
         """

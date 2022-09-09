@@ -1,6 +1,8 @@
 import ephem
+import json
 from datetime import datetime, timedelta
-from eph import groundstation, schedule
+from tleprocessing.src.eph import groundstation
+from tleprocessing.src.eph import schedule
 
 
 def test_1():
@@ -28,6 +30,11 @@ def test_1():
             print(output[i])
 
 
+def default(o):
+    if isinstance(o, datetime):
+        return o.isoformat()
+
+
 def test_2():
     satellite = ephem.readtle("STARLINK-24",
                               "1 44238U 19029D   22228.14008782  .00099335  00000+0  21125-2 0  9999",
@@ -39,10 +46,12 @@ def test_2():
                                     altitude=146,
                                     positioning_timeout_sec=35)
 
-    pos = station.next_available_pass(satellite, datetime.now(), datetime.now() + timedelta(hours=24), 100)
+    #pos = station.next_available_pass(satellite, datetime.now(), datetime.now() + timedelta(hours=24), 100)
+    start, stop, pos = station.next_pass(satellite, datetime.now())
+    print(json.dumps(pos, indent=4, default=default))
 
-    for item in pos:
-        print(item)
+    #for item in pos:
+    #    print(item)
 
 
 def test_3():

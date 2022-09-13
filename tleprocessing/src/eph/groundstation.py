@@ -46,7 +46,7 @@ class Station:
         return start_date, stop_date, output
 
     def next_available_pass(self, satellite, start_date: datetime, end_date: datetime,
-                            minimum_pass_time_sec: int = 10) -> list[dict]:
+                            minimum_pass_time_sec: int = 10) -> Tuple[datetime, datetime, list[dict]]:
         """
         Returns the next availability window between start_date and end_date where
         there are at least minimum_pass_time_sec position samples with elevation above self.minimum_elevation
@@ -69,11 +69,12 @@ class Station:
                               item['elevation'] > self.minimum_elevation]
 
             if len(available_pass) >= minimum_pass_time_sec:
-                return available_pass
+                return datetime.strptime(available_pass[0]["date"], utils.PYEPHEM_DATE_PATTERN), \
+                       datetime.strptime(available_pass[-1]["date"], utils.PYEPHEM_DATE_PATTERN), available_pass
 
             current_date = stop_date
 
-        return []
+        return start_date, end_date, []
 
     def all_available_passes(self, satellite, start_date: datetime, end_date: datetime,
                              minimum_pass_time_sec: int = 10) -> list:
@@ -122,10 +123,16 @@ class Station:
         output = {}
 
         for satellite in satellites:
-            output[satellite.name] = self.next_available_pass(satellite,
-                                                              start_date,
-                                                              end_date,
-                                                              minimum_pass_time_sec)
+            start, stop, sat_pass = self.next_available_pass(satellite,
+                                                         start_date,
+                                                         end_date,
+                                                         minimum_pass_time_sec)
+
+            output[satellite.name] = {
+                "start": start,
+                "stop": stop,
+                "pass": sat_pass
+            }
 
         return output
 

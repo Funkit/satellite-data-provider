@@ -1,8 +1,8 @@
 import ephem
 import json
 from datetime import datetime, timedelta
-from tleprocessing.src.eph import groundstation
-from tleprocessing.src.eph import schedule
+from eph import groundstation
+from eph import schedule
 
 
 def test_1():
@@ -131,8 +131,9 @@ def test_5():
 
     passes = schedule.get_schedule(station_list, sat_list, datetime.now(), datetime.now() + timedelta(hours=4), 100)
 
-    for item in passes:
-        print(item)
+    print(passes)
+    #for item in passes:
+    #    print(item)
 
 
 def test_6():
@@ -159,4 +160,4 @@ def test_6():
 
 
 if __name__ == '__main__':
-    test_2()
+    test_3()

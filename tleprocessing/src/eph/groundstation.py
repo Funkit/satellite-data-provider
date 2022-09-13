@@ -96,7 +96,7 @@ class Station:
         output = []
 
         while int((end_date - current_date).total_seconds()) > minimum_pass_time_sec:
-            sat_pass = self.next_available_pass(satellite, current_date, end_date, minimum_pass_time_sec)
+            _, _, sat_pass = self.next_available_pass(satellite, current_date, end_date, minimum_pass_time_sec)
             if len(sat_pass) == 0:
                 return output
 
@@ -131,7 +131,7 @@ class Station:
             output[satellite.name] = {
                 "start": start,
                 "stop": stop,
-                "pass": sat_pass
+                "coordinates": sat_pass
             }
 
         return output
@@ -164,7 +164,7 @@ class Station:
 
             # TODO: satellites copy ?
             for i in range(len(satellites)):
-                sat_pass = self.next_available_pass(satellites[i], ref_date, end_date, minimum_pass_time_sec)
+                _, _, sat_pass = self.next_available_pass(satellites[i], ref_date, end_date, minimum_pass_time_sec)
                 if len(sat_pass) > 0:
                     dt = datetime.strptime(sat_pass[0]['date'], utils.PYEPHEM_DATE_PATTERN)
                     if dt < earliest_sat_date:

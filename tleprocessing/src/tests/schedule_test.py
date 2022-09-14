@@ -98,7 +98,3 @@ def test_schedule_get_schedule():
     want_str = json.dumps(want, indent=4, default=default)
 
     assert got_str == want_str
-
-
-if __name__ == '__main__':
-    test_schedule_get_schedule()

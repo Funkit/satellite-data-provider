@@ -4,7 +4,7 @@
 // - protoc             v3.21.2
 // source: pointing.proto
 
-package pointing
+package sattrack
 
 import (
 	context "context"

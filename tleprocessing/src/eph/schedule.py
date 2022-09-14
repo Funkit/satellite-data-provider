@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 from . import utils, groundstation
+from rpc import pointing_pb2
+from rpc import pointing_pb2_grpc
 
 
-def get_schedule(stations: list[groundstation.Station], satellites, start_date: datetime, end_date: datetime) -> list:
+def get_schedule(satellites: list[pointing_pb2.SatMon], stations: list[groundstation.Station], start_date: datetime, end_date: datetime) -> list:
 
     delta = int((end_date - start_date).total_seconds())
 
@@ -25,9 +27,8 @@ def get_schedule(stations: list[groundstation.Station], satellites, start_date: 
         earliest_sat_date = end_date
         for i in range(len(satellites)):
             for station in stations:
-                sat_pass = station.next_available_pass(satellites[i]['info'], ref_date, end_date, satellites[i]['minimum_pass_length'])
+                dt, _, sat_pass = station.next_available_pass(satellites[i]['info'], ref_date, end_date, satellites[i]['minimum_pass_length'])
                 if len(sat_pass) != 0:
-                    dt = datetime.strptime(sat_pass[0]['date'], utils.PYEPHEM_DATE_PATTERN)
                     if ((station.name != previous_station_name) and (dt < earliest_sat_date)) or \
                             ((station.name == previous_station_name) and
                              (dt < earliest_sat_date + timedelta(seconds=station.positioning_timeout_sec))):
@@ -62,18 +63,8 @@ def get_next_pass(satellite, ground_stations: list[groundstation.Station], start
     earliest_station_name = ""
 
     for station in ground_stations:
-        sat_pass = station.next_available_pass(satellite, start_date, stop_date, 10)
-        print("satellite = %s, start_date = %s, stop_date = %s, request.satellite.minimum_pass_length_sec = %d"
-              % (satellite.name,
-                 start_date,
-                 stop_date,
-                 minimum_pass_length_sec))
-
+        pass_start, _, sat_pass = station.next_available_pass(satellite, start_date, stop_date, 10)
         if len(sat_pass) > 0:
-            print("sat_pass has ", len(sat_pass), " items")
-            pass_start = datetime.strptime(sat_pass[-1]['date'], utils.PYEPHEM_DATE_PATTERN)
-            print("len(earliest_pass) == 0: ", len(earliest_pass) == 0)
-            print("pass_start < earliest_pass_date: ", pass_start < earliest_pass_date)
             if len(earliest_pass) == 0 or pass_start < earliest_pass_date:
                 earliest_pass_date = pass_start
                 earliest_pass = sat_pass
@@ -85,5 +76,5 @@ def get_next_pass(satellite, ground_stations: list[groundstation.Station], start
         return {
             "satellite_name": satellite.name,
             "station_name": earliest_station_name,
-            "pass": earliest_pass
+            "coordinates": earliest_pass
         }

@@ -25,7 +25,7 @@ def test_next_pass():
     got_str = json.dumps(got, indent=4, default=default)
 
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '../../samples/next_pass.json')
+    filename = os.path.join(dirname, '../../samples/groundstation_next_pass.json')
     with open(filename, 'r') as data_file:
         want_raw = data_file.read()
 
@@ -54,7 +54,7 @@ def test_next_available_pass():
     got_str = json.dumps(got, indent=4, default=default)
 
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '../../samples/next_available_pass.json')
+    filename = os.path.join(dirname, '../../samples/groundstation_next_available_pass.json')
     with open(filename, 'r') as data_file:
         want_raw = data_file.read()
 
@@ -85,7 +85,7 @@ def test_all_available_pass():
     got_str = json.dumps(got, indent=4, default=default)
 
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '../../samples/all_available_passes.json')
+    filename = os.path.join(dirname, '../../samples/groundstation_all_available_passes.json')
     with open(filename, 'r') as data_file:
         want_raw = data_file.read()
 
@@ -121,7 +121,7 @@ def test_next_available_passes():
     got_str = json.dumps(got, indent=4, default=default)
 
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '../../samples/next_available_passes.json')
+    filename = os.path.join(dirname, '../../samples/groundstation_next_available_passes.json')
 
     with open(filename, 'r') as data_file:
         want_raw = data_file.read()
@@ -158,7 +158,7 @@ def test_next_available_passes_sequence():
     got_str = json.dumps(got, indent=4, default=default)
 
     dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '../../samples/next_available_passes_sequence.json')
+    filename = os.path.join(dirname, '../../samples/groundstation_next_available_passes_sequence.json')
 
     with open(filename, 'r') as data_file:
         want_raw = data_file.read()
